@@ -1,0 +1,321 @@
+// Mapbox Access Token - REPLACE WITH YOUR TOKEN
+mapboxgl.accessToken = 'YOUR_MAPBOX_TOKEN_HERE';
+
+// State
+let allPlaces = [];
+let map;
+let markers = [];
+let currentFilter = 'all';
+
+// Mysore coordinates and bounds
+const mysoreCenter = [76.6394, 12.2958];
+const mysoreBounds = [
+    [76.4, 12.1],  // Southwest
+    [76.8, 12.5]   // Northeast
+];
+
+// Initialize map
+function initMap() {
+    map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/light-v11',
+        center: mysoreCenter,
+        zoom: 12,
+        maxBounds: mysoreBounds,
+        minZoom: 10
+    });
+
+    map.addControl(new mapboxgl.NavigationControl());
+}
+
+// Extract coordinates from Google Maps URL
+async function extractCoordinates(url) {
+    if (!url) return null;
+
+    try {
+        // Handle different Google Maps URL formats
+
+        // Format 1: Direct coordinates (https://maps.google.com/?q=12.345,76.789)
+        const coordMatch = url.match(/q=([-\d.]+),([-\d.]+)/);
+        if (coordMatch) {
+            return [parseFloat(coordMatch[2]), parseFloat(coordMatch[1])];
+        }
+
+        // Format 2: Place URL with coordinates (https://www.google.com/maps/place/.../@12.345,76.789)
+        const placeMatch = url.match(/@([-\d.]+),([-\d.]+)/);
+        if (placeMatch) {
+            return [parseFloat(placeMatch[2]), parseFloat(placeMatch[1])];
+        }
+
+        // Format 3: Short URL (https://maps.app.goo.gl/xyz or https://goo.gl/maps/xyz)
+        // For short URLs, we'll use Mapbox Geocoding API as fallback
+        if (url.includes('goo.gl')) {
+            console.log('Short URL detected, will need manual geocoding:', url);
+            return null; // Will need to geocode by place name
+        }
+
+        return null;
+    } catch (error) {
+        console.error('Error extracting coordinates:', error);
+        return null;
+    }
+}
+
+// Geocode place name using Mapbox Geocoding API
+async function geocodePlaceName(placeName) {
+    try {
+        const query = encodeURIComponent(`${placeName}, Mysore, Karnataka, India`);
+        const response = await fetch(
+            `https://api.mapbox.com/geocoding/v5/mapbox.places/${query}.json?access_token=${mapboxgl.accessToken}&limit=1&bbox=${mysoreBounds[0][0]},${mysoreBounds[0][1]},${mysoreBounds[1][0]},${mysoreBounds[1][1]}`
+        );
+        const data = await response.json();
+
+        if (data.features && data.features.length > 0) {
+            return data.features[0].center;
+        }
+        return null;
+    } catch (error) {
+        console.error('Geocoding error:', error);
+        return null;
+    }
+}
+
+// Parse CSV and load places
+async function loadPlaces() {
+    try {
+        const response = await fetch('data.csv');
+        const csvText = await response.text();
+
+        Papa.parse(csvText, {
+            header: true,
+            skipEmptyLines: true,
+            complete: async function(results) {
+                const data = results.data;
+
+                // Process each place
+                for (const row of data) {
+                    if (!row.Name || row.Name.trim() === '') continue;
+
+                    // Extract coordinates
+                    let coords = await extractCoordinates(row.Link);
+
+                    // If short URL, try geocoding by name
+                    if (!coords && row.Name) {
+                        coords = await geocodePlaceName(row.Name);
+                    }
+
+                    if (coords) {
+                        const place = {
+                            name: row.Name.trim(),
+                            note: row['Curators Note'] || '',
+                            dietary: row['Dietary Preference'] || '',
+                            link: row.Link || '',
+                            mustTry: row['Must Try'] || '',
+                            recommendedTime: row['Recommended Time'] || '',
+                            tags: row.Tags ? row.Tags.split(',').map(t => t.trim()) : [],
+                            price: row['Ticket Price'] || '',
+                            timings: row.Timings || '',
+                            trivia: row.Trivia || '',
+                            coordinates: coords
+                        };
+
+                        allPlaces.push(place);
+                    } else {
+                        console.warn('Could not geocode:', row.Name);
+                    }
+                }
+
+                console.log(`Loaded ${allPlaces.length} places`);
+                displayPlaces(allPlaces);
+                updateLastUpdated();
+            }
+        });
+    } catch (error) {
+        console.error('Error loading CSV:', error);
+        document.getElementById('map').innerHTML = '<div class="loading">Error loading data. Please check console.</div>';
+    }
+}
+
+// Create marker for a place
+function createMarker(place) {
+    // Create custom marker element
+    const el = document.createElement('div');
+    el.className = 'marker';
+    el.innerHTML = `
+        <svg width="30" height="40" viewBox="0 0 30 40">
+            <path d="M15 0C9.5 0 5 4.5 5 10c0 8 10 20 10 20s10-12 10-20c0-5.5-4.5-10-10-10z" fill="#e74c3c"/>
+            <circle cx="15" cy="10" r="4" fill="white"/>
+        </svg>
+    `;
+    el.style.cursor = 'pointer';
+
+    // Create popup with preview
+    const popup = new mapboxgl.Popup({ offset: 25, closeButton: false })
+        .setHTML(`
+            <div class="popup-content">
+                <h3>${place.name}</h3>
+                <div class="tags">
+                    ${place.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                </div>
+                <button onclick="showPlaceCard('${place.name}')">View Details</button>
+            </div>
+        `);
+
+    // Create marker
+    const marker = new mapboxgl.Marker(el)
+        .setLngLat(place.coordinates)
+        .setPopup(popup)
+        .addTo(map);
+
+    // Add hover effect
+    el.addEventListener('mouseenter', () => {
+        marker.togglePopup();
+    });
+
+    return marker;
+}
+
+// Display places on map
+function displayPlaces(places) {
+    // Clear existing markers
+    markers.forEach(marker => marker.remove());
+    markers = [];
+
+    // Add new markers
+    places.forEach(place => {
+        const marker = createMarker(place);
+        markers.push(marker);
+    });
+}
+
+// Show place card
+function showPlaceCard(placeName) {
+    const place = allPlaces.find(p => p.name === placeName);
+    if (!place) return;
+
+    // Populate card
+    document.getElementById('card-name').textContent = place.name;
+
+    // Tags
+    const tagsContainer = document.getElementById('card-tags');
+    tagsContainer.innerHTML = place.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+
+    // Content sections
+    const sections = [
+        { id: 'note-section', content: place.note },
+        { id: 'must-try-section', content: place.mustTry },
+        { id: 'timings-section', content: place.timings },
+        { id: 'recommended-section', content: place.recommendedTime },
+        { id: 'price-section', content: place.price },
+        { id: 'trivia-section', content: place.trivia }
+    ];
+
+    sections.forEach(section => {
+        const element = document.getElementById(section.id);
+        if (section.content && section.content.trim()) {
+            element.style.display = 'block';
+            const contentId = section.id.replace('-section', '');
+            document.getElementById(`card-${contentId}`).textContent = section.content;
+        } else {
+            element.style.display = 'none';
+        }
+    });
+
+    // Link
+    document.getElementById('card-link').href = place.link;
+
+    // Show card
+    document.getElementById('place-card').classList.remove('hidden');
+
+    // Fly to location
+    map.flyTo({
+        center: place.coordinates,
+        zoom: 15,
+        duration: 1000
+    });
+}
+
+// Close place card
+document.getElementById('close-card').addEventListener('click', () => {
+    document.getElementById('place-card').classList.add('hidden');
+});
+
+// Filter places
+function filterPlaces(category) {
+    currentFilter = category;
+
+    // Update button states
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.category === category) {
+            btn.classList.add('active');
+        }
+    });
+
+    // Filter places
+    let filtered;
+    if (category === 'all') {
+        filtered = allPlaces;
+    } else {
+        filtered = allPlaces.filter(place =>
+            place.tags.some(tag => tag.toLowerCase().includes(category.toLowerCase()))
+        );
+    }
+
+    displayPlaces(filtered);
+}
+
+// Search places
+function searchPlaces(query) {
+    if (!query.trim()) {
+        filterPlaces(currentFilter);
+        return;
+    }
+
+    const lowerQuery = query.toLowerCase();
+    const filtered = allPlaces.filter(place => {
+        // Apply current category filter first
+        if (currentFilter !== 'all') {
+            if (!place.tags.some(tag => tag.toLowerCase().includes(currentFilter.toLowerCase()))) {
+                return false;
+            }
+        }
+
+        // Then apply search
+        return place.name.toLowerCase().includes(lowerQuery) ||
+               place.note.toLowerCase().includes(lowerQuery) ||
+               place.tags.some(tag => tag.toLowerCase().includes(lowerQuery));
+    });
+
+    displayPlaces(filtered);
+}
+
+// Set up event listeners
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        filterPlaces(btn.dataset.category);
+    });
+});
+
+document.getElementById('search').addEventListener('input', (e) => {
+    searchPlaces(e.target.value);
+});
+
+// Update last updated date
+function updateLastUpdated() {
+    const date = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    document.getElementById('last-updated').textContent = date;
+}
+
+// Make showPlaceCard available globally
+window.showPlaceCard = showPlaceCard;
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    initMap();
+    loadPlaces();
+});

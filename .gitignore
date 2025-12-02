@@ -1,0 +1,20 @@
+# OS Files
+.DS_Store
+Thumbs.db
+
+# IDE Files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Notion Export Folder (keep your data.csv instead)
+notion export/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Optional: Environment variables (if you add any)
+.env
+.env.local
