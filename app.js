@@ -190,15 +190,11 @@ function createMarker(place) {
     `;
     el.style.cursor = 'pointer';
 
-    // Create popup with preview
+    // Create popup with just the name
     const popup = new mapboxgl.Popup({ offset: 25, closeButton: false })
         .setHTML(`
             <div class="popup-content">
-                <h3>${place.name}</h3>
-                <div class="tags">
-                    ${place.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-                </div>
-                <button onclick="showPlaceCard('${place.name}')">View Details</button>
+                <h3 style="margin: 0; font-size: 1rem;">${place.name}</h3>
             </div>
         `);
 
@@ -211,6 +207,11 @@ function createMarker(place) {
     // Add hover effect
     el.addEventListener('mouseenter', () => {
         marker.togglePopup();
+    });
+
+    // Add click handler to show full details
+    el.addEventListener('click', () => {
+        showPlaceCard(place.name);
     });
 
     return marker;
@@ -256,7 +257,40 @@ function showPlaceCard(placeName) {
         if (section.content && section.content.trim()) {
             element.style.display = 'block';
             const contentId = section.id.replace('-section', '');
-            document.getElementById(`card-${contentId}`).textContent = section.content;
+            const contentEl = document.getElementById(`card-${contentId}`);
+            const content = section.content;
+
+            // Check if content is long (more than 300 characters)
+            if (content.length > 300) {
+                contentEl.innerHTML = content;
+                contentEl.classList.add('truncated');
+
+                // Add read more button if not already present
+                let readMoreBtn = element.querySelector('.read-more-btn');
+                if (!readMoreBtn) {
+                    readMoreBtn = document.createElement('button');
+                    readMoreBtn.className = 'read-more-btn';
+                    readMoreBtn.textContent = 'Read more';
+                    readMoreBtn.onclick = function() {
+                        if (contentEl.classList.contains('truncated')) {
+                            contentEl.classList.remove('truncated');
+                            contentEl.classList.add('expanded');
+                            this.textContent = 'Show less';
+                        } else {
+                            contentEl.classList.remove('expanded');
+                            contentEl.classList.add('truncated');
+                            this.textContent = 'Read more';
+                        }
+                    };
+                    element.appendChild(readMoreBtn);
+                }
+            } else {
+                contentEl.textContent = content;
+                contentEl.classList.remove('truncated', 'expanded');
+                // Remove read more button if exists
+                const existingBtn = element.querySelector('.read-more-btn');
+                if (existingBtn) existingBtn.remove();
+            }
         } else {
             element.style.display = 'none';
         }
@@ -306,40 +340,11 @@ function filterPlaces(category) {
     displayPlaces(filtered);
 }
 
-// Search places
-function searchPlaces(query) {
-    if (!query.trim()) {
-        filterPlaces(currentFilter);
-        return;
-    }
-
-    const lowerQuery = query.toLowerCase();
-    const filtered = allPlaces.filter(place => {
-        // Apply current category filter first
-        if (currentFilter !== 'all') {
-            if (!place.tags.some(tag => tag.toLowerCase().includes(currentFilter.toLowerCase()))) {
-                return false;
-            }
-        }
-
-        // Then apply search
-        return place.name.toLowerCase().includes(lowerQuery) ||
-               place.note.toLowerCase().includes(lowerQuery) ||
-               place.tags.some(tag => tag.toLowerCase().includes(lowerQuery));
-    });
-
-    displayPlaces(filtered);
-}
-
 // Set up event listeners
 document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         filterPlaces(btn.dataset.category);
     });
-});
-
-document.getElementById('search').addEventListener('input', (e) => {
-    searchPlaces(e.target.value);
 });
 
 // Update last updated date

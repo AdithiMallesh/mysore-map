@@ -120,28 +120,6 @@ main {
     border-color: var(--primary-color);
 }
 
-/* Search */
-.search-container {
-    padding: 1rem 2rem;
-    background: var(--bg-color);
-    border-bottom: 1px solid var(--border-color);
-}
-
-#search {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: var(--transition);
-}
-
-#search:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
-}
-
 /* Map */
 #map {
     flex: 1;
@@ -193,24 +171,28 @@ main {
     background: var(--accent-color);
 }
 
-/* Place Card */
+/* Place Card - Floating */
 .place-card {
     position: absolute;
-    top: 0;
-    right: 0;
-    width: 400px;
-    max-width: 90vw;
-    height: 100%;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(0);
+    width: 500px;
+    max-width: calc(100vw - 4rem);
+    max-height: 70vh;
     background: var(--bg-color);
-    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     overflow-y: auto;
     z-index: 1000;
-    transition: transform 0.3s ease;
-    transform: translateX(0);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 1;
+    border-radius: 16px;
 }
 
 .place-card.hidden {
-    transform: translateX(100%);
+    transform: translateX(-50%) translateY(20px);
+    opacity: 0;
+    pointer-events: none;
 }
 
 .place-card .close-btn {
@@ -280,6 +262,33 @@ main {
     font-size: 1rem;
     line-height: 1.6;
     color: var(--text-color);
+}
+
+.card-section p.truncated {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.card-section p.expanded {
+    display: block;
+}
+
+.read-more-btn {
+    color: var(--primary-color);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0.25rem 0;
+    margin-top: 0.5rem;
+    text-decoration: underline;
+    transition: var(--transition);
+}
+
+.read-more-btn:hover {
+    color: var(--accent-color);
 }
 
 .maps-link {
