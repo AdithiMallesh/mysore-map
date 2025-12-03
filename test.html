@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSV Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+</head>
+<body>
+    <h1>CSV Parsing Test</h1>
+    <div id="results"></div>
+
+    <script>
+        async function testCSV() {
+            const response = await fetch('data.csv');
+            const csvText = await response.text();
+
+            Papa.parse(csvText, {
+                header: true,
+                skipEmptyLines: 'greedy',
+                complete: function(results) {
+                    const data = results.data;
+
+                    let withLinks = 0;
+                    let total = 0;
+
+                    for (const row of data) {
+                        if (row.Name && row.Name.trim().length > 2) {
+                            total++;
+                            if (row.Link && row.Link.includes('http')) {
+                                withLinks++;
+                            }
+                        }
+                    }
+
+                    document.getElementById('results').innerHTML = `
+                        <p>Total rows parsed: ${data.length}</p>
+                        <p>Valid places: ${total}</p>
+                        <p>With links: ${withLinks}</p>
+                        <p>First place: ${data[0].Name}</p>
+                        <p>First link: ${data[0].Link}</p>
+                    `;
+
+                    console.log('Full results:', {
+                        totalRows: data.length,
+                        validPlaces: total,
+                        withLinks: withLinks
+                    });
+                }
+            });
+        }
+
+        testCSV();
+    </script>
+</body>
+</html>

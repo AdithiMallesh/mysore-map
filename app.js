@@ -48,10 +48,9 @@ async function extractCoordinates(url) {
         }
 
         // Format 3: Short URL (https://maps.app.goo.gl/xyz or https://goo.gl/maps/xyz)
-        // For short URLs, we'll use Mapbox Geocoding API as fallback
+        // Return null so we can geocode by place name
         if (url.includes('goo.gl')) {
-            console.log('Short URL detected, will need manual geocoding:', url);
-            return null; // Will need to geocode by place name
+            return null; // Will geocode by place name
         }
 
         return null;
@@ -88,25 +87,56 @@ async function loadPlaces() {
 
         Papa.parse(csvText, {
             header: true,
-            skipEmptyLines: true,
+            skipEmptyLines: 'greedy',
             complete: async function(results) {
                 const data = results.data;
 
-                // Process each place
-                for (const row of data) {
-                    if (!row.Name || row.Name.trim() === '') continue;
+                console.log(`CSV parsed: ${data.length} total rows`);
+                console.log('First row:', data[0]);
+                console.log('Column names:', results.meta.fields);
 
-                    // Extract coordinates
+                // Process places in batches for better performance
+                let batch = [];
+                let skippedCount = 0;
+
+                for (const row of data) {
+                    if (!row.Name || row.Name.trim() === '' || row.Name.trim().length < 2) {
+                        skippedCount++;
+                        continue;
+                    }
+
+                    // Check if it has a valid link
+                    if (!row.Link || row.Link.trim() === '' || !row.Link.includes('http')) {
+                        console.warn('No valid link for:', row.Name.trim());
+                        skippedCount++;
+                        continue;
+                    }
+
+                    batch.push(row);
+                }
+
+                console.log(`Processing ${batch.length} valid entries...`);
+
+                // Process all places
+                let failedGeocoding = [];
+
+                for (let i = 0; i < batch.length; i++) {
+                    const row = batch[i];
+                    const placeName = row.Name.trim();
+
+                    // Try to extract coordinates
                     let coords = await extractCoordinates(row.Link);
 
-                    // If short URL, try geocoding by name
-                    if (!coords && row.Name) {
-                        coords = await geocodePlaceName(row.Name);
+                    // If no coords, try geocoding by name
+                    if (!coords) {
+                        coords = await geocodePlaceName(placeName);
+                        // Small delay to avoid rate limiting
+                        await new Promise(resolve => setTimeout(resolve, 100));
                     }
 
                     if (coords) {
                         const place = {
-                            name: row.Name.trim(),
+                            name: placeName,
                             note: row['Curators Note'] || '',
                             dietary: row['Dietary Preference'] || '',
                             link: row.Link || '',
@@ -120,12 +150,23 @@ async function loadPlaces() {
                         };
 
                         allPlaces.push(place);
+
+                        // Add markers progressively
+                        if (allPlaces.length % 5 === 0) {
+                            displayPlaces(allPlaces);
+                            console.log(`✓ Loaded ${allPlaces.length}/${batch.length} places...`);
+                        }
                     } else {
-                        console.warn('Could not geocode:', row.Name);
+                        failedGeocoding.push(placeName);
                     }
                 }
 
-                console.log(`Loaded ${allPlaces.length} places`);
+                console.log(`\n✓ Loaded ${allPlaces.length} places successfully`);
+                console.log(`✗ Skipped ${skippedCount} entries (no valid link)`);
+                if (failedGeocoding.length > 0) {
+                    console.log(`⚠ Failed to geocode ${failedGeocoding.length} places:`);
+                    failedGeocoding.forEach(name => console.log(`  - ${name}`));
+                }
                 displayPlaces(allPlaces);
                 updateLastUpdated();
             }
