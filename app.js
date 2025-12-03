@@ -1,5 +1,5 @@
 // Mapbox Access Token - REPLACE WITH YOUR TOKEN
-mapboxgl.accessToken = 'YOUR_MAPBOX_TOKEN_HERE';
+mapboxgl.accessToken = 'pk.eyJ1IjoiYWR2YWl0LTEzMDYiLCJhIjoiY21pcHljbXc2MDg1bzNkczhuMXhpZGdtNCJ9.Ekm3ZBRqYuKwAKwma8H3lA';
 
 // State
 let allPlaces = [];
