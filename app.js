@@ -22,10 +22,380 @@ function initMap() {
         center: mysoreCenter,
         zoom: 12,
         maxBounds: mysoreBounds,
-        minZoom: 10
+        minZoom: 10,
+        pitch: 45, // Balanced tilt for comfortable 3D view
+        bearing: 0,
+        antialias: true, // Smoother 3D rendering
+        maxPitch: 70 // Allow comfortable viewing angles
     });
 
     map.addControl(new mapboxgl.NavigationControl());
+
+    // Enable map rotation using right click + drag
+    map.dragRotate.enable();
+
+    // Enable map pitch using touch gestures
+    map.touchZoomRotate.enableRotation();
+    map.touchPitch.enable();
+
+    // Add custom styling once the map style is loaded
+    map.on('load', () => {
+        customizeMapStyle();
+        add3DControls();
+    });
+}
+
+// Add 3D control buttons
+function add3DControls() {
+    // Create 3D toggle button
+    const toggle3DButton = document.createElement('button');
+    toggle3DButton.className = 'mapboxgl-ctrl-icon toggle-3d-btn';
+    toggle3DButton.innerHTML = '3D';
+    toggle3DButton.title = 'Toggle 3D View';
+    toggle3DButton.style.cssText = `
+        background: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        padding: 8px 12px;
+        font-weight: bold;
+        font-size: 14px;
+        box-shadow: 0 0 0 2px rgba(0,0,0,.1);
+        color: #2c3e50;
+    `;
+
+    let is3D = true;
+    toggle3DButton.onclick = () => {
+        if (is3D) {
+            map.easeTo({ pitch: 0, bearing: 0, duration: 1000 });
+            toggle3DButton.textContent = '2D';
+            is3D = false;
+        } else {
+            map.easeTo({ pitch: 45, bearing: 0, duration: 1000 });
+            toggle3DButton.textContent = '3D';
+            is3D = true;
+        }
+    };
+
+    // Create a custom control
+    const toggle3DControl = document.createElement('div');
+    toggle3DControl.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
+    toggle3DControl.appendChild(toggle3DButton);
+
+    // Add to map
+    const controlContainer = document.querySelector('.mapboxgl-ctrl-top-right');
+    if (controlContainer) {
+        controlContainer.appendChild(toggle3DControl);
+    }
+
+    // Create rotation buttons
+    const rotationControl = document.createElement('div');
+    rotationControl.className = 'mapboxgl-ctrl mapboxgl-ctrl-group rotation-control';
+    rotationControl.style.cssText = 'margin-top: 10px;';
+
+    const rotateLeftBtn = document.createElement('button');
+    rotateLeftBtn.className = 'mapboxgl-ctrl-icon';
+    rotateLeftBtn.innerHTML = '↶';
+    rotateLeftBtn.title = 'Rotate Left';
+    rotateLeftBtn.style.cssText = `
+        background: white;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        font-size: 18px;
+        width: 29px;
+        height: 29px;
+    `;
+    rotateLeftBtn.onclick = () => {
+        map.easeTo({ bearing: map.getBearing() - 45, duration: 500 });
+    };
+
+    const rotateRightBtn = document.createElement('button');
+    rotateRightBtn.className = 'mapboxgl-ctrl-icon';
+    rotateRightBtn.innerHTML = '↷';
+    rotateRightBtn.title = 'Rotate Right';
+    rotateRightBtn.style.cssText = `
+        background: white;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        font-size: 18px;
+        width: 29px;
+        height: 29px;
+        border-top: 1px solid #ddd;
+    `;
+    rotateRightBtn.onclick = () => {
+        map.easeTo({ bearing: map.getBearing() + 45, duration: 500 });
+    };
+
+    rotationControl.appendChild(rotateLeftBtn);
+    rotationControl.appendChild(rotateRightBtn);
+
+    if (controlContainer) {
+        controlContainer.appendChild(rotationControl);
+    }
+}
+
+// Customize map style with enhanced design elements
+function customizeMapStyle() {
+    // Add 3D terrain
+    map.addSource('mapbox-dem', {
+        'type': 'raster-dem',
+        'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+        'tileSize': 512,
+        'maxzoom': 14
+    });
+
+    // Add terrain layer for 3D elevation
+    map.setTerrain({
+        'source': 'mapbox-dem',
+        'exaggeration': 1.5  // Balanced elevation for visible terrain
+    });
+
+    // Add hillshading for better terrain visualization (reduced blur)
+    map.addLayer({
+        'id': 'hillshading',
+        'source': 'mapbox-dem',
+        'type': 'hillshade',
+        'paint': {
+            'hillshade-shadow-color': '#3a5a2a',
+            'hillshade-highlight-color': '#f5f5f0',
+            'hillshade-illumination-direction': 315,
+            'hillshade-exaggeration': 0.4,
+            'hillshade-accent-color': '#d4eac7'
+        }
+    }, 'waterway'); // Place before waterway layer
+
+    // Enhance water bodies (lakes, rivers, ponds) with vibrant blue
+    if (map.getLayer('water')) {
+        map.setPaintProperty('water', 'fill-color', '#7fc7ff');
+        map.setPaintProperty('water', 'fill-opacity', 0.8);
+    }
+
+    // Add vibrant water outline
+    if (map.getLayer('waterway')) {
+        map.setPaintProperty('waterway', 'line-color', '#5aa8db');
+        map.setPaintProperty('waterway', 'line-width', [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 1.5,
+            15, 3
+        ]);
+    }
+
+    // Add color to national parks and nature reserves
+    if (map.getLayer('national-park')) {
+        map.setPaintProperty('national-park', 'fill-color', '#c8e6c8');
+        map.setPaintProperty('national-park', 'fill-opacity', 0.5);
+    }
+
+    // Enhance parks and greenery with more vibrant greens
+    if (map.getLayer('landuse')) {
+        map.setPaintProperty('landuse', 'fill-color', [
+            'match',
+            ['get', 'class'],
+            'park', '#6bc96b',
+            'wood', '#5ab85a',
+            'grass', '#80d580',
+            'garden', '#95e095',
+            'cemetery', '#7acc7a',
+            'pitch', '#70d070',
+            'agriculture', '#b8d99a',
+            'scrub', '#75cc75',
+            'forest', '#4aa04a',
+            'residential', '#ffe8d0',
+            'commercial', '#ffc8c8',
+            'industrial', '#d0d0e8',
+            '#e8e8e8' // default
+        ]);
+        map.setPaintProperty('landuse', 'fill-opacity', 0.85);
+    }
+
+    // Make the base land color more colorful for natural terrain
+    if (map.getLayer('land')) {
+        map.setPaintProperty('land', 'background-color', '#e8f4e0');
+    }
+
+    // Add background color to the map canvas for a warmer feel
+    map.setPaintProperty('background', 'background-color', '#f0f8e8');
+
+    // Color different area types (residential, commercial, industrial)
+    if (map.getLayer('landcover')) {
+        map.setPaintProperty('landcover', 'fill-color', [
+            'match',
+            ['get', 'class'],
+            'residential', '#ffe5cc',
+            'commercial', '#ffd4d4',
+            'industrial', '#e6e6f0',
+            'retail', '#ffe0f0',
+            'residential_area', '#fff5e6',
+            '#f5f5f5'
+        ]);
+        map.setPaintProperty('landcover', 'fill-opacity', 0.4);
+    }
+
+    // Add colors to different neighborhood types
+    const neighborhoodLayer = map.getLayer('settlement-subdivision-label');
+    if (neighborhoodLayer) {
+        map.setPaintProperty('settlement-subdivision-label', 'text-color', '#5a4a7a');
+        map.setPaintProperty('settlement-subdivision-label', 'text-halo-color', '#ffffff');
+        map.setPaintProperty('settlement-subdivision-label', 'text-halo-width', 2);
+    }
+
+    // Style different road types with distinct colors
+    const roadLayers = [
+        'road-motorway-trunk',
+        'road-primary',
+        'road-secondary-tertiary',
+        'road-street',
+        'road-minor'
+    ];
+
+    roadLayers.forEach(layerId => {
+        if (map.getLayer(layerId)) {
+            // Set road colors based on hierarchy
+            if (layerId.includes('motorway') || layerId.includes('trunk')) {
+                map.setPaintProperty(layerId, 'line-color', '#f9a825');
+                map.setPaintProperty(layerId, 'line-width', [
+                    'interpolate',
+                    ['exponential', 1.5],
+                    ['zoom'],
+                    10, 1.5,
+                    18, 8
+                ]);
+            } else if (layerId.includes('primary')) {
+                map.setPaintProperty(layerId, 'line-color', '#fb8c00');
+                map.setPaintProperty(layerId, 'line-width', [
+                    'interpolate',
+                    ['exponential', 1.5],
+                    ['zoom'],
+                    10, 1,
+                    18, 6
+                ]);
+            } else if (layerId.includes('secondary') || layerId.includes('tertiary')) {
+                map.setPaintProperty(layerId, 'line-color', '#e8a838');
+                map.setPaintProperty(layerId, 'line-width', [
+                    'interpolate',
+                    ['exponential', 1.5],
+                    ['zoom'],
+                    10, 0.8,
+                    18, 5
+                ]);
+            } else {
+                map.setPaintProperty(layerId, 'line-color', '#d8d8d8');
+                map.setPaintProperty(layerId, 'line-width', [
+                    'interpolate',
+                    ['exponential', 1.5],
+                    ['zoom'],
+                    10, 0.5,
+                    18, 3
+                ]);
+            }
+        }
+    });
+
+    // Enhance road labels
+    const roadLabelLayers = [
+        'road-label',
+        'road-label-simple',
+        'road-number-shield'
+    ];
+
+    roadLabelLayers.forEach(layerId => {
+        if (map.getLayer(layerId)) {
+            map.setPaintProperty(layerId, 'text-color', '#2c3e50');
+            map.setPaintProperty(layerId, 'text-halo-color', '#ffffff');
+            map.setPaintProperty(layerId, 'text-halo-width', 2);
+        }
+    });
+
+    // Enhance place labels (area names, neighborhoods)
+    const placeLabelLayers = [
+        'place-label',
+        'place-label-city',
+        'place-label-town',
+        'place-label-village',
+        'place-label-neighborhood'
+    ];
+
+    placeLabelLayers.forEach(layerId => {
+        if (map.getLayer(layerId)) {
+            map.setPaintProperty(layerId, 'text-color', '#1a1a1a');
+            map.setPaintProperty(layerId, 'text-halo-color', '#ffffff');
+            map.setPaintProperty(layerId, 'text-halo-width', 2);
+            map.setPaintProperty(layerId, 'text-halo-blur', 1);
+        }
+    });
+
+    // Enhance POI (Points of Interest) labels
+    if (map.getLayer('poi-label')) {
+        map.setPaintProperty('poi-label', 'text-color', '#4a5568');
+        map.setPaintProperty('poi-label', 'text-halo-color', '#ffffff');
+        map.setPaintProperty('poi-label', 'text-halo-width', 1.5);
+    }
+
+    // Style buildings with colorful palette
+    if (map.getLayer('building')) {
+        map.setPaintProperty('building', 'fill-color', [
+            'interpolate',
+            ['linear'],
+            ['get', 'height'],
+            0, '#e8d4c8',
+            10, '#d9c4b8',
+            20, '#cab4a8',
+            50, '#bba498'
+        ]);
+        map.setPaintProperty('building', 'fill-opacity', [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            15, 0.5,
+            16, 0.7
+        ]);
+        map.setPaintProperty('building', 'fill-outline-color', '#a89888');
+    }
+
+    // Add colorful 3D buildings at high zoom levels
+    if (!map.getLayer('3d-buildings')) {
+        map.addLayer({
+            'id': '3d-buildings',
+            'source': 'composite',
+            'source-layer': 'building',
+            'filter': ['==', 'extrude', 'true'],
+            'type': 'fill-extrusion',
+            'minzoom': 15,
+            'paint': {
+                'fill-extrusion-color': [
+                    'interpolate',
+                    ['linear'],
+                    ['get', 'height'],
+                    0, '#e8d4c8',
+                    10, '#d4c0b0',
+                    20, '#c0ac98',
+                    30, '#b09880',
+                    50, '#a08468'
+                ],
+                'fill-extrusion-height': [
+                    'interpolate',
+                    ['linear'],
+                    ['zoom'],
+                    15, 0,
+                    15.05, ['get', 'height']
+                ],
+                'fill-extrusion-base': [
+                    'interpolate',
+                    ['linear'],
+                    ['zoom'],
+                    15, 0,
+                    15.05, ['get', 'min_height']
+                ],
+                'fill-extrusion-opacity': 0.7
+            }
+        });
+    }
+
+    console.log('✓ Map style customization complete');
 }
 
 // Extract coordinates from Google Maps URL
@@ -185,11 +555,16 @@ function createMarker(place) {
     `;
     el.style.cursor = 'pointer';
 
-    // Create popup with just the name
-    const popup = new mapboxgl.Popup({ offset: 25, closeButton: false })
+    // Create popup with just the name (compact size)
+    const popup = new mapboxgl.Popup({
+        offset: 15,
+        closeButton: false,
+        closeOnClick: false,
+        maxWidth: '200px'
+    })
         .setHTML(`
-            <div class="popup-content">
-                <h3 style="margin: 0; font-size: 1rem;">${place.name}</h3>
+            <div class="popup-content" style="padding: 2px 4px;">
+                <h3 style="margin: 0; font-size: 0.85rem; font-weight: 500;">${place.name}</h3>
             </div>
         `);
 
@@ -199,9 +574,25 @@ function createMarker(place) {
         .setPopup(popup)
         .addTo(map);
 
-    // Add hover effect
+    // Add hover effect with proper cleanup
     el.addEventListener('mouseenter', () => {
-        marker.togglePopup();
+        // Close all other popups first
+        markers.forEach(m => {
+            if (m !== marker && m.getPopup().isOpen()) {
+                m.togglePopup();
+            }
+        });
+        // Open this popup
+        if (!marker.getPopup().isOpen()) {
+            marker.togglePopup();
+        }
+    });
+
+    el.addEventListener('mouseleave', () => {
+        // Close popup when mouse leaves
+        if (marker.getPopup().isOpen()) {
+            marker.togglePopup();
+        }
     });
 
     // Add click handler to show full details

@@ -128,16 +128,18 @@ main {
 
 /* Custom Mapbox Popup */
 .mapboxgl-popup-content {
-    padding: 1rem;
-    border-radius: 8px;
-    box-shadow: var(--shadow);
-    min-width: 200px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    min-width: auto;
+    max-width: 200px;
 }
 
 .popup-content h3 {
-    margin-bottom: 0.5rem;
+    margin: 0;
     color: var(--primary-color);
-    font-size: 1rem;
+    font-size: 0.85rem;
+    font-weight: 500;
 }
 
 .popup-content .tags {
