@@ -29,33 +29,32 @@ function initMap() {
 }
 
 // Extract coordinates from Google Maps URL
-async function extractCoordinates(url) {
+async function extractCoordinates(url, placeName = 'Unknown') {
     if (!url) return null;
 
     try {
-        // Handle different Google Maps URL formats
+        // Only use !3d (latitude) and !4d (longitude) parameters
+        // Example: !3d12.2919536!4d76.6406718
+        console.log(`🔍 Extracting coordinates for: "${placeName}"`);
+        console.log(`   URL: ${url}`);
+        const latMatch = url.match(/!3d([-\d.]+)/);
+        const lngMatch = url.match(/!4d([-\d.]+)/);
 
-        // Format 1: Direct coordinates (https://maps.google.com/?q=12.345,76.789)
-        const coordMatch = url.match(/q=([-\d.]+),([-\d.]+)/);
-        if (coordMatch) {
-            return [parseFloat(coordMatch[2]), parseFloat(coordMatch[1])];
+        if (latMatch && lngMatch) {
+            const lat = parseFloat(latMatch[1]);
+            const lng = parseFloat(lngMatch[1]);
+            console.log(`✓ Extracted coordinates for "${placeName}": [${lng}, ${lat}]`);
+            // Return as [longitude, latitude] for Mapbox
+            return [lng, lat];
         }
 
-        // Format 2: Place URL with coordinates (https://www.google.com/maps/place/.../@12.345,76.789)
-        const placeMatch = url.match(/@([-\d.]+),([-\d.]+)/);
-        if (placeMatch) {
-            return [parseFloat(placeMatch[2]), parseFloat(placeMatch[1])];
-        }
-
-        // Format 3: Short URL (https://maps.app.goo.gl/xyz or https://goo.gl/maps/xyz)
-        // Return null so we can geocode by place name
-        if (url.includes('goo.gl')) {
-            return null; // Will geocode by place name
-        }
-
+        // If we couldn't extract !3d/!4d coordinates, log error for manual debugging
+        console.error(`⚠️  Failed to extract !3d/!4d coordinates for "${placeName}"`);
+        console.error(`    URL: ${url}`);
         return null;
     } catch (error) {
-        console.error('Error extracting coordinates:', error);
+        console.error(`⚠️  Error extracting coordinates for "${placeName}":`, error);
+        console.error(`    URL: ${url}`);
         return null;
     }
 }
@@ -124,40 +123,36 @@ async function loadPlaces() {
                     const row = batch[i];
                     const placeName = row.Name.trim();
 
-                    // Try to extract coordinates
-                    let coords = await extractCoordinates(row.Link);
+                    // Try to extract coordinates (only using !3d/!4d parameters)
+                    let coords = await extractCoordinates(row.Link, placeName);
 
-                    // If no coords, try geocoding by name
+                    // If no coords from URL, skip this place - needs manual review
                     if (!coords) {
-                        coords = await geocodePlaceName(placeName);
-                        // Small delay to avoid rate limiting
-                        await new Promise(resolve => setTimeout(resolve, 100));
+                        console.warn(`⚠️  Skipping "${placeName}" - needs manual review`);
+                        failedGeocoding.push(placeName);
+                        continue;
                     }
 
-                    if (coords) {
-                        const place = {
-                            name: placeName,
-                            note: row['Curators Note'] || '',
-                            dietary: row['Dietary Preference'] || '',
-                            link: row.Link || '',
-                            mustTry: row['Must Try'] || '',
-                            recommendedTime: row['Recommended Time'] || '',
-                            tags: row.Tags ? row.Tags.split(',').map(t => t.trim()) : [],
-                            price: row['Ticket Price'] || '',
-                            timings: row.Timings || '',
-                            trivia: row.Trivia || '',
-                            coordinates: coords
-                        };
+                    const place = {
+                        name: placeName,
+                        note: row['Curators Note'] || '',
+                        dietary: row['Dietary Preference'] || '',
+                        link: row.Link || '',
+                        mustTry: row['Must Try'] || '',
+                        recommendedTime: row['Recommended Time'] || '',
+                        tags: row.Tags ? row.Tags.split(',').map(t => t.trim()) : [],
+                        price: row['Ticket Price'] || '',
+                        timings: row.Timings || '',
+                        trivia: row.Trivia || '',
+                        coordinates: coords
+                    };
 
-                        allPlaces.push(place);
+                    allPlaces.push(place);
 
-                        // Add markers progressively
-                        if (allPlaces.length % 5 === 0) {
-                            displayPlaces(allPlaces);
-                            console.log(`✓ Loaded ${allPlaces.length}/${batch.length} places...`);
-                        }
-                    } else {
-                        failedGeocoding.push(placeName);
+                    // Add markers progressively
+                    if (allPlaces.length % 5 === 0) {
+                        displayPlaces(allPlaces);
+                        console.log(`✓ Loaded ${allPlaces.length}/${batch.length} places...`);
                     }
                 }
 
