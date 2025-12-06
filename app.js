@@ -630,11 +630,12 @@ function showPlaceCard(placeName) {
 
     // Content sections
     const sections = [
-        { id: 'note-section', content: place.note },
-        { id: 'must-try-section', content: place.mustTry },
+        { id: 'dietary-section', content: place.dietary },
         { id: 'timings-section', content: place.timings },
         { id: 'recommended-section', content: place.recommendedTime },
         { id: 'price-section', content: place.price },
+        { id: 'must-try-section', content: place.mustTry },
+        { id: 'note-section', content: place.note },
         { id: 'trivia-section', content: place.trivia }
     ];
 
