@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watercolor Calendar Card Preview</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background: #f0f0f0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .preview-container {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 1400px;
+        }
+        .card-wrapper {
+            position: relative;
+        }
+        .place-card {
+            position: static;
+            transform: none;
+            margin: 0;
+        }
+        h1 {
+            text-align: center;
+            width: 100%;
+            color: var(--primary-color);
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-container">
+        <h1>Watercolor Calendar Card Design Preview</h1>
+
+        <!-- Example 1: Coffee Shop with Image -->
+        <div class="card-wrapper">
+            <div class="place-card">
+                <!-- Watercolor Image Header -->
+                <div class="card-image-header">
+                    <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800" alt="Minimal Coffee" class="card-watercolor-image">
+                    <div class="card-image-overlay">
+                        <h2 class="card-title">Minimal Coffee</h2>
+                        <div class="tags">
+                            <span class="tag">Coffee</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calendar-style Content Grid -->
+                <div class="card-body">
+                    <!-- Quick Info Grid (Calendar-like) -->
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-icon">🕐</div>
+                            <div class="info-content">
+                                <h3>Timings</h3>
+                                <p>8 am – 8 pm</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">💰</div>
+                            <div class="info-content">
+                                <h3>Entry Fee</h3>
+                                <p>Free</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">⭐</div>
+                            <div class="info-content">
+                                <h3>Best Time</h3>
+                                <p>Anytime</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">🍽️</div>
+                            <div class="info-content">
+                                <h3>Dietary</h3>
+                                <p>Veg</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Must Try Section -->
+                    <div class="card-section highlight-section">
+                        <h3>🍴 Must Try</h3>
+                        <p>Iced Latte</p>
+                    </div>
+
+                    <!-- Adithi's Note -->
+                    <div class="card-section note-section">
+                        <h3>💭 Adithi's Note</h3>
+                        <p>My fav coffee place in Mysore. It's a perfect little place. Take your coffee to go and walk around the neighbourhood. Get some coffee beans too.</p>
+                    </div>
+
+                    <!-- Maps Link Button -->
+                    <a href="#" class="maps-link">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                        </svg>
+                        Open in Google Maps
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Example 2: Palace with Image -->
+        <div class="card-wrapper">
+            <div class="place-card">
+                <!-- Watercolor Image Header -->
+                <div class="card-image-header">
+                    <img src="https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=800" alt="Mysore Palace" class="card-watercolor-image">
+                    <div class="card-image-overlay">
+                        <h2 class="card-title">Mysore Palace</h2>
+                        <div class="tags">
+                            <span class="tag">Around the city</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calendar-style Content Grid -->
+                <div class="card-body">
+                    <!-- Quick Info Grid (Calendar-like) -->
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-icon">🕐</div>
+                            <div class="info-content">
+                                <h3>Timings</h3>
+                                <p>10 am - 5:30 pm</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">💰</div>
+                            <div class="info-content">
+                                <h3>Entry Fee</h3>
+                                <p>₹70 for Indians</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">⭐</div>
+                            <div class="info-content">
+                                <h3>Best Time</h3>
+                                <p>Evening for light show</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item" style="display:none">
+                            <div class="info-icon">🍽️</div>
+                            <div class="info-content">
+                                <h3>Dietary</h3>
+                                <p>N/A</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Must Try Section -->
+                    <div class="card-section highlight-section">
+                        <h3>🍴 Must Try</h3>
+                        <p>Visit during the evening when the palace is illuminated with thousands of lights.</p>
+                    </div>
+
+                    <!-- Trivia -->
+                    <div class="card-section trivia-section">
+                        <h3>✨ Trivia</h3>
+                        <p>The palace was commissioned by King Krishnaraja Wodeyar IV in 1897. It took 15 years to complete. The palace is built in the Indo-Saracenic style and blends Hindu, Rajput and Mughal architectural elements.</p>
+                    </div>
+
+                    <!-- Maps Link Button -->
+                    <a href="#" class="maps-link">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                        </svg>
+                        Open in Google Maps
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Example 3: Without Image (Gradient Fallback) -->
+        <div class="card-wrapper">
+            <div class="place-card">
+                <!-- Watercolor Image Header (No image - shows gradient) -->
+                <div class="card-image-header">
+                    <div class="card-image-overlay" style="background: linear-gradient(135deg, rgba(227, 242, 253, 0.9) 0%, rgba(255, 248, 225, 0.9) 50%, rgba(252, 228, 236, 0.9) 100%);">
+                        <h2 class="card-title" style="color: var(--primary-color); text-shadow: none;">The Old House</h2>
+                        <div class="tags">
+                            <span class="tag">Coffee</span>
+                            <span class="tag">Food</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calendar-style Content Grid -->
+                <div class="card-body">
+                    <!-- Quick Info Grid (Calendar-like) -->
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-icon">🕐</div>
+                            <div class="info-content">
+                                <h3>Timings</h3>
+                                <p>8 am - 11 pm</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item" style="display:none">
+                            <div class="info-icon">💰</div>
+                            <div class="info-content">
+                                <h3>Entry Fee</h3>
+                                <p>Free</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">⭐</div>
+                            <div class="info-content">
+                                <h3>Best Time</h3>
+                                <p>Anytime of the day</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">🍽️</div>
+                            <div class="info-content">
+                                <h3>Dietary</h3>
+                                <p>Veg</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Adithi's Note -->
+                    <div class="card-section note-section">
+                        <h3>💭 Adithi's Note</h3>
+                        <p>They have been around for a long time. They now also have the most beautiful bakery inside. The food is amazing. Try the filter coffee flavored ice cream. It will change your life.</p>
+                    </div>
+
+                    <!-- Maps Link Button -->
+                    <a href="#" class="maps-link">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                        </svg>
+                        Open in Google Maps
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

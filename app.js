@@ -514,6 +514,7 @@ async function loadPlaces() {
                         price: row['Ticket Price'] || '',
                         timings: row.Timings || '',
                         trivia: row.Trivia || '',
+                        image: row['Image'] || row['Image URL'] || '',
                         coordinates: coords
                     };
 
@@ -621,30 +622,55 @@ function showPlaceCard(placeName) {
     const place = allPlaces.find(p => p.name === placeName);
     if (!place) return;
 
-    // Populate card
+    // Populate card title
     document.getElementById('card-name').textContent = place.name;
+
+    // Populate image
+    const cardImage = document.getElementById('card-image');
+    if (place.image && place.image.trim()) {
+        cardImage.src = place.image;
+        cardImage.alt = place.name;
+        cardImage.style.display = 'block';
+    } else {
+        // Use a placeholder gradient if no image
+        cardImage.style.display = 'none';
+    }
 
     // Tags
     const tagsContainer = document.getElementById('card-tags');
     tagsContainer.innerHTML = place.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
 
+    // Info Grid Items
+    const infoItems = [
+        { id: 'timings-item', content: place.timings, textId: 'card-timings' },
+        { id: 'price-item', content: place.price, textId: 'card-price' },
+        { id: 'recommended-item', content: place.recommendedTime, textId: 'card-recommended' },
+        { id: 'dietary-item', content: place.dietary, textId: 'card-dietary' }
+    ];
+
+    infoItems.forEach(item => {
+        const element = document.getElementById(item.id);
+        const textEl = document.getElementById(item.textId);
+        if (item.content && item.content.trim()) {
+            element.style.display = 'flex';
+            textEl.textContent = item.content;
+        } else {
+            element.style.display = 'none';
+        }
+    });
+
     // Content sections
     const sections = [
-        { id: 'dietary-section', content: place.dietary },
-        { id: 'timings-section', content: place.timings },
-        { id: 'recommended-section', content: place.recommendedTime },
-        { id: 'price-section', content: place.price },
-        { id: 'must-try-section', content: place.mustTry },
-        { id: 'note-section', content: place.note },
-        { id: 'trivia-section', content: place.trivia }
+        { id: 'must-try-section', content: place.mustTry, textId: 'card-must-try' },
+        { id: 'note-section', content: place.note, textId: 'card-note' },
+        { id: 'trivia-section', content: place.trivia, textId: 'card-trivia' }
     ];
 
     sections.forEach(section => {
         const element = document.getElementById(section.id);
         if (section.content && section.content.trim()) {
             element.style.display = 'block';
-            const contentId = section.id.replace('-section', '');
-            const contentEl = document.getElementById(`card-${contentId}`);
+            const contentEl = document.getElementById(section.textId);
             const content = section.content;
 
             // Check if content is long (more than 300 characters)

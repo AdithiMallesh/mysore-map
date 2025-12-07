@@ -71,48 +71,81 @@
         <!-- Map Container -->
         <div id="map"></div>
 
-        <!-- Place Card (Hidden by default) -->
+        <!-- Watercolor Calendar Place Card (Hidden by default) -->
         <div id="place-card" class="place-card hidden">
             <button class="close-btn" id="close-card">&times;</button>
-            <h2 id="card-name"></h2>
-            <div id="card-tags" class="tags"></div>
-            <div id="card-content">
-                <div class="card-section" id="dietary-section">
-                    <h3>Dietary Preference</h3>
-                    <p id="card-dietary"></p>
-                </div>
-                <div class="card-section" id="timings-section">
-                    <h3>Timings</h3>
-                    <p id="card-timings"></p>
-                </div>
-                <div class="card-section" id="recommended-section">
-                    <h3>Best Time to Visit</h3>
-                    <p id="card-recommended"></p>
-                </div>
-                <div class="card-section" id="price-section">
-                    <h3>Entry Fee</h3>
-                    <p id="card-price"></p>
-                </div>
-                <div class="card-section" id="must-try-section">
-                    <h3>Must Try</h3>
-                    <p id="card-must-try"></p>
+
+            <!-- Watercolor Image Header -->
+            <div class="card-image-header">
+                <img id="card-image" src="" alt="" class="card-watercolor-image">
+                <div class="card-image-overlay">
+                    <h2 id="card-name" class="card-title"></h2>
+                    <div id="card-tags" class="tags"></div>
                 </div>
             </div>
-            <a id="card-link" href="#" target="_blank" class="maps-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                </svg>
-                Open in Google Maps
-            </a>
-            <div id="card-content">
-                <div class="card-section" id="note-section">
-                    <h3>Adithi's Note</h3>
+
+            <!-- Calendar-style Content Grid -->
+            <div class="card-body">
+                <!-- Quick Info Grid (Calendar-like) -->
+                <div class="info-grid">
+                    <div class="info-item" id="timings-item">
+                        <div class="info-icon">🕐</div>
+                        <div class="info-content">
+                            <h3>Timings</h3>
+                            <p id="card-timings"></p>
+                        </div>
+                    </div>
+
+                    <div class="info-item" id="price-item">
+                        <div class="info-icon">💰</div>
+                        <div class="info-content">
+                            <h3>Entry Fee</h3>
+                            <p id="card-price"></p>
+                        </div>
+                    </div>
+
+                    <div class="info-item" id="recommended-item">
+                        <div class="info-icon">⭐</div>
+                        <div class="info-content">
+                            <h3>Best Time</h3>
+                            <p id="card-recommended"></p>
+                        </div>
+                    </div>
+
+                    <div class="info-item" id="dietary-item">
+                        <div class="info-icon">🍽️</div>
+                        <div class="info-content">
+                            <h3>Dietary</h3>
+                            <p id="card-dietary"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Must Try Section -->
+                <div class="card-section highlight-section" id="must-try-section">
+                    <h3>🍴 Must Try</h3>
+                    <p id="card-must-try"></p>
+                </div>
+
+                <!-- Adithi's Note -->
+                <div class="card-section note-section" id="note-section">
+                    <h3>💭 Adithi's Note</h3>
                     <p id="card-note"></p>
                 </div>
-                <div class="card-section" id="trivia-section">
-                    <h3>Trivia</h3>
+
+                <!-- Trivia -->
+                <div class="card-section trivia-section" id="trivia-section">
+                    <h3>✨ Trivia</h3>
                     <p id="card-trivia"></p>
                 </div>
+
+                <!-- Maps Link Button -->
+                <a id="card-link" href="#" target="_blank" class="maps-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                    </svg>
+                    Open in Google Maps
+                </a>
             </div>
         </div>
     </main>
