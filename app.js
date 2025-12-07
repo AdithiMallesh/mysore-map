@@ -596,7 +596,9 @@ function createMarker(place) {
     });
 
     // Add click handler to show full details
-    el.addEventListener('click', () => {
+    el.addEventListener('click', (e) => {
+        console.log('Marker clicked!', place.name);
+        e.stopPropagation();
         showPlaceCard(place.name);
     });
 
@@ -618,8 +620,13 @@ function displayPlaces(places) {
 
 // Show place card
 function showPlaceCard(placeName) {
+    console.log('showPlaceCard called with:', placeName);
     const place = allPlaces.find(p => p.name === placeName);
-    if (!place) return;
+    if (!place) {
+        console.error('Place not found:', placeName);
+        return;
+    }
+    console.log('Place found:', place);
 
     // Populate card
     document.getElementById('card-name').textContent = place.name;
@@ -687,7 +694,13 @@ function showPlaceCard(placeName) {
     document.getElementById('card-link').href = place.link;
 
     // Show card
-    document.getElementById('place-card').classList.remove('hidden');
+    const placeCard = document.getElementById('place-card');
+    if (!placeCard) {
+        console.error('CARD ELEMENT NOT FOUND!');
+        return;
+    }
+    placeCard.classList.remove('hidden');
+    console.log('✅ Card shown for:', place.name);
 
     // Fly to location
     map.flyTo({

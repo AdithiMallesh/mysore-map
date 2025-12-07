@@ -192,9 +192,7 @@ main {
 }
 
 .place-card.hidden {
-    transform: translateX(-50%) translateY(20px);
-    opacity: 0;
-    pointer-events: none;
+    display: none !important;
 }
 
 .place-card .close-btn {
