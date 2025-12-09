@@ -486,6 +486,11 @@ footer .small {
     main {
         height: calc(100vh - 180px);
     }
+
+    /* Push map controls down to avoid overlap with filters */
+    .mapboxgl-ctrl-top-right {
+        top: 60px !important;
+    }
 }
 
 /* Loading State */
