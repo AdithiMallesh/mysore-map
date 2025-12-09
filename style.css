@@ -498,3 +498,25 @@ footer .small {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
+/* Weather and AQI Controls */
+.weather-aqi-control {
+    box-shadow: 0 0 0 2px rgba(0,0,0,.1);
+    border-radius: 4px;
+}
+
+.weather-btn,
+.aqi-btn {
+    transition: all 0.2s ease;
+}
+
+.weather-btn:hover,
+.aqi-btn:hover {
+    background: #f8f8f8 !important;
+    transform: translateX(-2px);
+}
+
+.weather-btn:active,
+.aqi-btn:active {
+    transform: translateX(-2px) scale(0.98);
+}

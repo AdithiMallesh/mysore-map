@@ -14,6 +14,10 @@ const mysoreBounds = [
     [76.8, 12.5]   // Northeast
 ];
 
+// Weather and AQI State
+let weatherData = null;
+let aqiData = null;
+
 // Initialize map
 function initMap() {
     map = new mapboxgl.Map({
@@ -133,6 +137,156 @@ function add3DControls() {
 
     if (controlContainer) {
         controlContainer.appendChild(rotationControl);
+    }
+
+    // Add Weather and AQI buttons below rotation controls
+    addWeatherAQIControls();
+}
+
+// Fetch weather data from OpenWeatherMap API
+async function fetchWeatherData() {
+    try {
+        const apiKey = 'YOUR_OPENWEATHERMAP_API_KEY'; // Users will need to replace this
+        const lat = mysoreCenter[1];
+        const lon = mysoreCenter[0];
+
+        // Fetch current weather
+        const weatherResponse = await fetch(
+            `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`
+        );
+        const weather = await weatherResponse.json();
+
+        // Fetch air quality
+        const aqiResponse = await fetch(
+            `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${apiKey}`
+        );
+        const aqi = await aqiResponse.json();
+
+        weatherData = {
+            temp: Math.round(weather.main.temp),
+            description: weather.weather[0].description,
+            icon: weather.weather[0].icon
+        };
+
+        aqiData = {
+            index: aqi.list[0].main.aqi,
+            components: aqi.list[0].components
+        };
+
+        updateWeatherAQIDisplay();
+    } catch (error) {
+        console.error('Error fetching weather/AQI data:', error);
+        // Set fallback data
+        weatherData = { temp: '--', description: 'Unavailable', icon: '01d' };
+        aqiData = { index: '--', components: {} };
+        updateWeatherAQIDisplay();
+    }
+}
+
+// Get AQI description based on index (1-5 scale)
+function getAQIDescription(index) {
+    const descriptions = {
+        1: 'Good',
+        2: 'Fair',
+        3: 'Moderate',
+        4: 'Poor',
+        5: 'Very Poor'
+    };
+    return descriptions[index] || 'N/A';
+}
+
+// Get AQI color based on index
+function getAQIColor(index) {
+    const colors = {
+        1: '#00e400',
+        2: '#ffff00',
+        3: '#ff7e00',
+        4: '#ff0000',
+        5: '#8f3f97'
+    };
+    return colors[index] || '#999';
+}
+
+// Add Weather and AQI control buttons
+function addWeatherAQIControls() {
+    const controlContainer = document.querySelector('.mapboxgl-ctrl-top-right');
+    if (!controlContainer) return;
+
+    // Create control group
+    const weatherAQIControl = document.createElement('div');
+    weatherAQIControl.className = 'mapboxgl-ctrl mapboxgl-ctrl-group weather-aqi-control';
+    weatherAQIControl.style.cssText = 'margin-top: 10px;';
+
+    // Weather Button
+    const weatherBtn = document.createElement('button');
+    weatherBtn.className = 'mapboxgl-ctrl-icon weather-btn';
+    weatherBtn.id = 'weather-btn';
+    weatherBtn.title = 'Current Weather';
+    weatherBtn.style.cssText = `
+        background: white;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        width: 29px;
+        height: 29px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: bold;
+        color: #2c3e50;
+    `;
+    weatherBtn.textContent = '--°';
+
+    // AQI Button
+    const aqiBtn = document.createElement('button');
+    aqiBtn.className = 'mapboxgl-ctrl-icon aqi-btn';
+    aqiBtn.id = 'aqi-btn';
+    aqiBtn.title = 'Air Quality Index';
+    aqiBtn.style.cssText = `
+        background: white;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        width: 29px;
+        height: 29px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: bold;
+        color: #2c3e50;
+        border-top: 1px solid #ddd;
+    `;
+    aqiBtn.textContent = '--';
+
+    weatherAQIControl.appendChild(weatherBtn);
+    weatherAQIControl.appendChild(aqiBtn);
+    controlContainer.appendChild(weatherAQIControl);
+
+    // Fetch initial data
+    fetchWeatherData();
+
+    // Update every 10 minutes
+    setInterval(fetchWeatherData, 10 * 60 * 1000);
+}
+
+// Update Weather and AQI display
+function updateWeatherAQIDisplay() {
+    const weatherBtn = document.getElementById('weather-btn');
+    const aqiBtn = document.getElementById('aqi-btn');
+
+    if (weatherBtn && weatherData) {
+        weatherBtn.textContent = `${weatherData.temp}°`;
+        weatherBtn.title = `Weather: ${weatherData.description}, ${weatherData.temp}°C`;
+    }
+
+    if (aqiBtn && aqiData) {
+        const aqiColor = getAQIColor(aqiData.index);
+        const aqiDesc = getAQIDescription(aqiData.index);
+        aqiBtn.textContent = aqiDesc;
+        aqiBtn.style.color = aqiColor;
+        aqiBtn.title = `Air Quality: ${aqiDesc} (Index: ${aqiData.index})`;
     }
 }
 
