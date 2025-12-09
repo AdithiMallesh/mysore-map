@@ -20,30 +20,36 @@ body {
     color: var(--text-color);
     background-color: var(--bg-color);
     line-height: 1.6;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Header */
 header {
     background: var(--bg-color);
     border-bottom: 1px solid var(--border-color);
-    padding: 1.5rem 2rem;
+    padding: 0.5rem 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 0.5rem;
 }
 
 .header-content h1 {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     font-weight: 600;
     color: var(--primary-color);
-    margin-bottom: 0.25rem;
+    margin-bottom: 0;
+    line-height: 1.2;
 }
 
 .subtitle {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: #666;
+    line-height: 1.2;
 }
 
 .social-links {
@@ -81,10 +87,11 @@ header {
 
 /* Main Content */
 main {
-    height: calc(100vh - 140px);
+    flex: 1;
     display: flex;
     flex-direction: column;
     position: relative;
+    overflow: hidden;
 }
 
 /* Map */
@@ -434,15 +441,17 @@ main {
 footer {
     background: var(--bg-color);
     border-top: 1px solid var(--border-color);
-    padding: 1rem 2rem;
+    padding: 0.35rem 2rem;
     text-align: center;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: #666;
+    line-height: 1.3;
 }
 
 footer .small {
-    font-size: 0.8rem;
-    margin-top: 0.25rem;
+    font-size: 0.7rem;
+    margin-top: 0;
+    line-height: 1.3;
 }
 
 /* Responsive Design */
