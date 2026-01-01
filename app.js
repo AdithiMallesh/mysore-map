@@ -489,64 +489,14 @@ function customizeMapStyle() {
         map.setPaintProperty('poi-label', 'text-halo-width', 1.5);
     }
 
-    // Style buildings with colorful palette
+    // Hide all buildings completely
     if (map.getLayer('building')) {
-        map.setPaintProperty('building', 'fill-color', [
-            'interpolate',
-            ['linear'],
-            ['get', 'height'],
-            0, '#e8d4c8',
-            10, '#d9c4b8',
-            20, '#cab4a8',
-            50, '#bba498'
-        ]);
-        map.setPaintProperty('building', 'fill-opacity', [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            15, 0.5,
-            16, 0.7
-        ]);
-        map.setPaintProperty('building', 'fill-outline-color', '#a89888');
+        map.setLayoutProperty('building', 'visibility', 'none');
     }
 
-    // Add colorful 3D buildings at high zoom levels
-    if (!map.getLayer('3d-buildings')) {
-        map.addLayer({
-            'id': '3d-buildings',
-            'source': 'composite',
-            'source-layer': 'building',
-            'filter': ['==', 'extrude', 'true'],
-            'type': 'fill-extrusion',
-            'minzoom': 15,
-            'paint': {
-                'fill-extrusion-color': [
-                    'interpolate',
-                    ['linear'],
-                    ['get', 'height'],
-                    0, '#e8d4c8',
-                    10, '#d4c0b0',
-                    20, '#c0ac98',
-                    30, '#b09880',
-                    50, '#a08468'
-                ],
-                'fill-extrusion-height': [
-                    'interpolate',
-                    ['linear'],
-                    ['zoom'],
-                    15, 0,
-                    15.05, ['get', 'height']
-                ],
-                'fill-extrusion-base': [
-                    'interpolate',
-                    ['linear'],
-                    ['zoom'],
-                    15, 0,
-                    15.05, ['get', 'min_height']
-                ],
-                'fill-extrusion-opacity': 0.7
-            }
-        });
+    // Remove 3D buildings layer if it exists
+    if (map.getLayer('3d-buildings')) {
+        map.removeLayer('3d-buildings');
     }
 
     console.log('✓ Map style customization complete');
