@@ -22,34 +22,11 @@ let aqiData = null;
 function initMap() {
     map = new mapboxgl.Map({
         container: 'map',
-        style: {
-            version: 8,
-            name: 'Custom Green Style',
-            sources: {
-                'carto-positron': {
-                    type: 'raster',
-                    tiles: [
-                        'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-                        'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-                        'https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
-                    ],
-                    tileSize: 256
-                }
-            },
-            layers: [
-                {
-                    id: 'carto-tiles',
-                    type: 'raster',
-                    source: 'carto-positron',
-                    minzoom: 0,
-                    maxzoom: 22
-                }
-            ]
-        },
+        style: 'mapbox://styles/mapbox/light-v11',
         center: mysoreCenter,
-        zoom: 15,
+        zoom: 12.223859479043945,
         maxBounds: mysoreBounds,
-        minZoom: 15,
+        minZoom: 12.223859479043945,
         pitch: 45, // Balanced tilt for comfortable 3D view
         bearing: 0,
         antialias: true, // Smoother 3D rendering
@@ -315,7 +292,187 @@ function updateWeatherAQIDisplay() {
 
 // Customize map style with enhanced design elements
 function customizeMapStyle() {
-    // No terrain - it was causing the brown color at lower zoom levels
+    // Terrain removed - was causing brown coloring
+
+    // Enhance water bodies (lakes, rivers, ponds) with vibrant blue
+    if (map.getLayer('water')) {
+        map.setPaintProperty('water', 'fill-color', '#12B2C1');
+        map.setPaintProperty('water', 'fill-opacity', 0.8);
+    }
+
+    // Add vibrant water outline
+    if (map.getLayer('waterway')) {
+        map.setPaintProperty('waterway', 'line-color', '#5aa8db');
+        map.setPaintProperty('waterway', 'line-width', [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 1.5,
+            15, 3
+        ]);
+    }
+
+    // Add color to national parks and nature reserves
+    if (map.getLayer('national-park')) {
+        map.setPaintProperty('national-park', 'fill-color', '#c8e6c8');
+        map.setPaintProperty('national-park', 'fill-opacity', 0.5);
+    }
+
+    // Enhance parks and greenery with more vibrant greens
+    if (map.getLayer('landuse')) {
+        map.setPaintProperty('landuse', 'fill-color', [
+            'match',
+            ['get', 'class'],
+            'park', '#6c8b08',
+            'wood', '#5ab85a',
+            'grass', '#80d580',
+            'garden', '#95e095',
+            'cemetery', '#7acc7a',
+            'pitch', '#70d070',
+            'agriculture', '#b8d99a',
+            'scrub', '#75cc75',
+            'forest', '#4aa04a',
+            'residential', '#d4edda',
+            'commercial', '#ffc8c8',
+            'industrial', '#d0d0e8',
+            '#e8e8e8' // default
+        ]);
+        map.setPaintProperty('landuse', 'fill-opacity', 0.85);
+    }
+
+    // Make the base land color more colorful for natural terrain
+    if (map.getLayer('land')) {
+        map.setPaintProperty('land', 'background-color', '#e8f4e0');
+    }
+
+    // Add background color to the map canvas for a warmer feel
+    map.setPaintProperty('background', 'background-color', '#c8e6c8');
+
+    // Color different area types (residential, commercial, industrial)
+    if (map.getLayer('landcover')) {
+        map.setPaintProperty('landcover', 'fill-color', [
+            'match',
+            ['get', 'class'],
+            'residential', '#79b425',
+            'commercial', '#ffd4d4',
+            'industrial', '#e6e6f0',
+            'retail', '#ffe0f0',
+            'residential_area', '#79b425',
+            '#f5f5f5'
+        ]);
+        map.setPaintProperty('landcover', 'fill-opacity', 0.4);
+    }
+
+    // Add colors to different neighborhood types
+    const neighborhoodLayer = map.getLayer('settlement-subdivision-label');
+    if (neighborhoodLayer) {
+        map.setPaintProperty('settlement-subdivision-label', 'text-color', '#5a4a7a');
+        map.setPaintProperty('settlement-subdivision-label', 'text-halo-color', '#ffffff');
+        map.setPaintProperty('settlement-subdivision-label', 'text-halo-width', 2);
+    }
+
+    // Style different road types with distinct colors
+    const roadLayers = [
+        'road-motorway-trunk',
+        'road-primary',
+        'road-secondary-tertiary',
+        'road-street',
+        'road-minor'
+    ];
+
+    roadLayers.forEach(layerId => {
+        if (map.getLayer(layerId)) {
+            // Set road colors based on hierarchy
+            if (layerId.includes('motorway') || layerId.includes('trunk')) {
+                map.setPaintProperty(layerId, 'line-color', '#f9a825');
+                map.setPaintProperty(layerId, 'line-width', [
+                    'interpolate',
+                    ['exponential', 1.5],
+                    ['zoom'],
+                    10, 1.5,
+                    18, 8
+                ]);
+            } else if (layerId.includes('primary')) {
+                map.setPaintProperty(layerId, 'line-color', '#fb8c00');
+                map.setPaintProperty(layerId, 'line-width', [
+                    'interpolate',
+                    ['exponential', 1.5],
+                    ['zoom'],
+                    10, 1,
+                    18, 6
+                ]);
+            } else if (layerId.includes('secondary') || layerId.includes('tertiary')) {
+                map.setPaintProperty(layerId, 'line-color', '#e8a838');
+                map.setPaintProperty(layerId, 'line-width', [
+                    'interpolate',
+                    ['exponential', 1.5],
+                    ['zoom'],
+                    10, 0.8,
+                    18, 5
+                ]);
+            } else {
+                map.setPaintProperty(layerId, 'line-color', '#d8d8d8');
+                map.setPaintProperty(layerId, 'line-width', [
+                    'interpolate',
+                    ['exponential', 1.5],
+                    ['zoom'],
+                    10, 0.5,
+                    18, 3
+                ]);
+            }
+        }
+    });
+
+    // Enhance road labels
+    const roadLabelLayers = [
+        'road-label',
+        'road-label-simple',
+        'road-number-shield'
+    ];
+
+    roadLabelLayers.forEach(layerId => {
+        if (map.getLayer(layerId)) {
+            map.setPaintProperty(layerId, 'text-color', '#2c3e50');
+            map.setPaintProperty(layerId, 'text-halo-color', '#ffffff');
+            map.setPaintProperty(layerId, 'text-halo-width', 2);
+        }
+    });
+
+    // Enhance place labels (area names, neighborhoods)
+    const placeLabelLayers = [
+        'place-label',
+        'place-label-city',
+        'place-label-town',
+        'place-label-village',
+        'place-label-neighborhood'
+    ];
+
+    placeLabelLayers.forEach(layerId => {
+        if (map.getLayer(layerId)) {
+            map.setPaintProperty(layerId, 'text-color', '#1a1a1a');
+            map.setPaintProperty(layerId, 'text-halo-color', '#ffffff');
+            map.setPaintProperty(layerId, 'text-halo-width', 2);
+            map.setPaintProperty(layerId, 'text-halo-blur', 1);
+        }
+    });
+
+    // Enhance POI (Points of Interest) labels
+    if (map.getLayer('poi-label')) {
+        map.setPaintProperty('poi-label', 'text-color', '#4a5568');
+        map.setPaintProperty('poi-label', 'text-halo-color', '#ffffff');
+        map.setPaintProperty('poi-label', 'text-halo-width', 1.5);
+    }
+
+    // Hide all buildings completely
+    if (map.getLayer('building')) {
+        map.setLayoutProperty('building', 'visibility', 'none');
+    }
+
+    // Remove 3D buildings layer if it exists
+    if (map.getLayer('3d-buildings')) {
+        map.removeLayer('3d-buildings');
+    }
+
     console.log('✓ Map style customization complete');
 }
 
@@ -469,17 +626,63 @@ function createMarker(place) {
     // Create custom marker element
     const el = document.createElement('div');
     el.className = 'marker';
-    el.innerHTML = `
-        <svg width="30" height="40" viewBox="0 0 30 40">
-            <path d="M15 0C9.5 0 5 4.5 5 10c0 8 10 20 10 20s10-12 10-20c0-5.5-4.5-10-10-10z" fill="#e74c3c"/>
-            <circle cx="15" cy="10" r="4" fill="white"/>
-        </svg>
-    `;
-    el.style.cursor = 'pointer';
+
+    // Check if this is Mysore Palace (exact match only, not museum or other places)
+    const isMysoreePalace = place.name.toLowerCase() === 'mysore palace';
+
+    if (isMysoreePalace) {
+        // Use custom icon for Mysore Palace
+        el.innerHTML = `
+            <img src="mysore-palace-icon.png" alt="Mysore Palace" class="palace-icon" style="width: 60px; height: 60px; object-fit: contain;">
+        `;
+        el.style.cursor = 'pointer';
+
+        // Add zoom-based scaling for the palace icon
+        const updatePalaceIconSize = () => {
+            const zoom = map.getZoom();
+            const icon = el.querySelector('.palace-icon');
+            if (icon) {
+                // Scale based on zoom level - gets LARGER as you zoom in
+                // At minZoom (12.22), size = 60px (clearly visible at initial view)
+                // At zoom 14, size = 100px
+                // At zoom 16, size = 140px
+                // At zoom 18+, size = 180px
+                let size;
+                if (zoom <= 12.5) {
+                    size = 60; // Initial zoom - clearly visible
+                } else if (zoom <= 14) {
+                    size = 60 + (zoom - 12.5) * 26.67; // 60-100px
+                } else if (zoom <= 16) {
+                    size = 100 + (zoom - 14) * 20; // 100-140px
+                } else if (zoom <= 18) {
+                    size = 140 + (zoom - 16) * 20; // 140-180px
+                } else {
+                    size = 180; // Max size
+                }
+                icon.style.width = `${size}px`;
+                icon.style.height = `${size}px`;
+            }
+        };
+
+        // Update size on zoom
+        map.on('zoom', updatePalaceIconSize);
+
+        // Initial size update
+        setTimeout(updatePalaceIconSize, 100);
+    } else {
+        // Regular marker for other places
+        el.innerHTML = `
+            <svg width="30" height="40" viewBox="0 0 30 40">
+                <path d="M15 0C9.5 0 5 4.5 5 10c0 8 10 20 10 20s10-12 10-20c0-5.5-4.5-10-10-10z" fill="#e74c3c"/>
+                <circle cx="15" cy="10" r="4" fill="white"/>
+            </svg>
+        `;
+        el.style.cursor = 'pointer';
+    }
 
     // Create popup with just the name (compact size)
     const popup = new mapboxgl.Popup({
-        offset: 15,
+        offset: isMysoreePalace ? 30 : 15,
         closeButton: false,
         closeOnClick: false,
         maxWidth: '200px'
