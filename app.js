@@ -325,42 +325,42 @@ function customizeMapStyle() {
             ['get', 'class'],
             'park', '#6c8b08',
             'wood', '#5ab85a',
-            'grass', '#80d580',
+            'grass', '#c3ed8e',
             'garden', '#95e095',
-            'cemetery', '#7acc7a',
-            'pitch', '#70d070',
-            'agriculture', '#b8d99a',
-            'scrub', '#75cc75',
+            'cemetery', '#c3ed8e',
+            'pitch', '#c3ed8e',
+            'agriculture', '#c3ed8e',
+            'scrub', '#60ab02',
             'forest', '#4aa04a',
-            'residential', '#d4edda',
-            'commercial', '#ffc8c8',
-            'industrial', '#d0d0e8',
-            '#e8e8e8' // default
+            'residential', '#c3ed8e',
+            'commercial', '#c3ed8e',
+            'industrial', '#c3ed8e',
+            '#c3ed8e' // default
         ]);
         map.setPaintProperty('landuse', 'fill-opacity', 0.85);
     }
 
-    // Make the base land color more colorful for natural terrain
+    // Make the base land color use the green tone
     if (map.getLayer('land')) {
-        map.setPaintProperty('land', 'background-color', '#e8f4e0');
+        map.setPaintProperty('land', 'background-color', '#c3ed8e');
     }
 
-    // Add background color to the map canvas for a warmer feel
-    map.setPaintProperty('background', 'background-color', '#c8e6c8');
+    // Add background color to the map canvas
+    map.setPaintProperty('background', 'background-color', '#c3ed8e');
 
     // Color different area types (residential, commercial, industrial)
     if (map.getLayer('landcover')) {
         map.setPaintProperty('landcover', 'fill-color', [
             'match',
             ['get', 'class'],
-            'residential', '#79b425',
-            'commercial', '#ffd4d4',
-            'industrial', '#e6e6f0',
-            'retail', '#ffe0f0',
-            'residential_area', '#79b425',
-            '#f5f5f5'
+            'residential', '#c3ed8e',
+            'commercial', '#c3ed8e',
+            'industrial', '#c3ed8e',
+            'retail', '#c3ed8e',
+            'residential_area', '#c3ed8e',
+            '#c3ed8e'
         ]);
-        map.setPaintProperty('landcover', 'fill-opacity', 0.4);
+        map.setPaintProperty('landcover', 'fill-opacity', 0);
     }
 
     // Add colors to different neighborhood types
