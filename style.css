@@ -111,9 +111,6 @@ main {
     display: flex;
     gap: 0.5rem;
     padding: 0.5rem;
-    background: white;
-    border-radius: 50px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     overflow-x: auto;
     max-width: calc(100vw - 2rem);
 }
