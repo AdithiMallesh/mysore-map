@@ -345,8 +345,10 @@ function customizeMapStyle() {
         map.setPaintProperty('land', 'background-color', '#c3ed8e');
     }
 
-    // Add background color to the map canvas
-    map.setPaintProperty('background', 'background-color', '#c3ed8e');
+    // Add background color to the map canvas (if layer exists)
+    if (map.getLayer('background')) {
+        map.setPaintProperty('background', 'background-color', '#c3ed8e');
+    }
 
     // Color different area types (residential, commercial, industrial)
     if (map.getLayer('landcover')) {
