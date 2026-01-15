@@ -25,6 +25,11 @@
     <!-- Mapbox CSS -->
     <link href='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css' rel='stylesheet' />
 
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
@@ -57,10 +62,20 @@
 
     <!-- Main Content -->
     <main>
+        <!-- Landing Overlay -->
+        <div id="landing-overlay" class="landing-overlay">
+            <div class="landing-content">
+                <p class="landing-subtitle">IN THE HEART OF</p>
+                <h1 class="landing-title">MYSORE</h1>
+                <p class="landing-description">Journey through the cultural capital of Karnataka. Discover palaces, gardens, and vibrant local experiences.</p>
+                <button id="explore-btn" class="explore-btn">EXPLORE THE MAP</button>
+            </div>
+        </div>
+
         <!-- Map Container -->
         <div id="map">
             <!-- Filters overlaid on map -->
-            <div class="filters">
+            <div class="filters" id="map-filters">
                 <button class="filter-btn active" data-category="all"><span class="icon">🗺️</span> All</button>
                 <button class="filter-btn" data-category="Food"><span class="icon">🍽️</span> Food</button>
                 <button class="filter-btn" data-category="Coffee"><span class="icon">☕</span> Coffee</button>

@@ -912,8 +912,36 @@ function updateLastUpdated() {
 // Make showPlaceCard available globally
 window.showPlaceCard = showPlaceCard;
 
+// Handle explore button click
+function handleExploreClick() {
+    const overlay = document.getElementById('landing-overlay');
+    const header = document.querySelector('header');
+    const filters = document.getElementById('map-filters');
+
+    // Hide overlay
+    overlay.classList.add('hidden');
+
+    // Show header, filters, and map controls
+    setTimeout(() => {
+        header.classList.add('visible');
+        filters.classList.add('visible');
+
+        // Show map controls
+        const mapControls = document.querySelector('.mapboxgl-ctrl-top-right');
+        if (mapControls) {
+            mapControls.classList.add('visible');
+        }
+    }, 100);
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     initMap();
     loadPlaces();
+
+    // Add explore button event listener
+    const exploreBtn = document.getElementById('explore-btn');
+    if (exploreBtn) {
+        exploreBtn.addEventListener('click', handleExploreClick);
+    }
 });
