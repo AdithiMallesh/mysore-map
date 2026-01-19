@@ -5,7 +5,7 @@ mapboxgl.accessToken = 'pk.eyJ1IjoiYWR2YWl0LTEzMDYiLCJhIjoiY21pcHljbXc2MDg1bzNkc
 let allPlaces = [];
 let map;
 let markers = [];
-let currentFilter = 'all';
+let currentFilter = null;
 
 // Mysore coordinates and bounds
 const mysoreCenter = [76.64899354864002, 12.32905289271676];
@@ -27,6 +27,7 @@ function initMap() {
         zoom: 12.223859479043945,
         maxBounds: mysoreBounds,
         minZoom: 12.223859479043945,
+        maxZoom: 15.360955745916725, // Prevent zooming beyond this level
         pitch: 45, // Balanced tilt for comfortable 3D view
         bearing: 0,
         antialias: true, // Smoother 3D rendering
@@ -975,23 +976,30 @@ document.getElementById('close-card').addEventListener('click', () => {
 
 // Filter places
 function filterPlaces(category) {
-    currentFilter = category;
+    // Toggle filter if clicking the same category
+    if (currentFilter === category) {
+        currentFilter = null; // Deselect - show all
+    } else {
+        currentFilter = category;
+    }
 
     // Update button states
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.remove('active');
-        if (btn.dataset.category === category) {
+        if (currentFilter && btn.dataset.category === currentFilter) {
             btn.classList.add('active');
         }
     });
 
     // Filter places
     let filtered;
-    if (category === 'all') {
+    if (currentFilter === null) {
+        // No filter selected - show all places
         filtered = allPlaces;
     } else {
+        // Filter by selected category
         filtered = allPlaces.filter(place =>
-            place.tags.some(tag => tag.toLowerCase().includes(category.toLowerCase()))
+            place.tags.some(tag => tag.toLowerCase().includes(currentFilter.toLowerCase()))
         );
     }
 
