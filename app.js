@@ -751,11 +751,10 @@ function createMarker(place) {
         // Initial size update
         setTimeout(updatePalaceIconSize, 100);
     } else {
-        // Regular marker for other places
+        // Regular marker for other places - simple red dot
         el.innerHTML = `
-            <svg width="30" height="40" viewBox="0 0 30 40">
-                <path d="M15 0C9.5 0 5 4.5 5 10c0 8 10 20 10 20s10-12 10-20c0-5.5-4.5-10-10-10z" fill="#e74c3c"/>
-                <circle cx="15" cy="10" r="4" fill="white"/>
+            <svg width="14" height="14" viewBox="0 0 14 14">
+                <circle cx="7" cy="7" r="5" fill="#c40808"/>
             </svg>
         `;
         el.style.cursor = 'pointer';
@@ -763,7 +762,7 @@ function createMarker(place) {
 
     // Create popup with just the name (compact size)
     const popup = new mapboxgl.Popup({
-        offset: isMysoreePalace ? 30 : 15,
+        offset: isMysoreePalace ? 30 : 7,
         closeButton: false,
         closeOnClick: false,
         maxWidth: '200px'
