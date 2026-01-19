@@ -220,7 +220,7 @@ main {
 /* Filters - Overlaid on Map */
 .filters {
     position: absolute;
-    top: 5rem;
+    top: 1rem;
     left: 50%;
     transform: translateX(-50%);
     z-index: 100;
