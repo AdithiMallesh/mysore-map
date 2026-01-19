@@ -8,7 +8,7 @@ let markers = [];
 let currentFilter = 'all';
 
 // Mysore coordinates and bounds
-const mysoreCenter = [76.6394, 12.2958];
+const mysoreCenter = [76.64899354864002, 12.32905289271676];
 const mysoreBounds = [
     [76.4, 12.1],  // Southwest
     [76.8, 12.5]   // Northeast
@@ -33,7 +33,8 @@ function initMap() {
         maxPitch: 70 // Allow comfortable viewing angles
     });
 
-    map.addControl(new mapboxgl.NavigationControl());
+    // Add custom compass to bottom-left
+    addCustomCompass();
 
     // Enable map rotation using right click + drag
     map.dragRotate.enable();
@@ -46,6 +47,12 @@ function initMap() {
     map.on('load', () => {
         customizeMapStyle();
         add3DControls();
+    });
+
+    // Update markers when zoom level changes
+    map.on('zoom', () => {
+        // Re-display places with current filter when zoom changes
+        filterPlaces(currentFilter);
     });
 }
 
@@ -141,6 +148,77 @@ function add3DControls() {
 
     // Add Weather and AQI buttons below rotation controls
     addWeatherAQIControls();
+}
+
+// Add custom compass control
+function addCustomCompass() {
+    const compassContainer = document.createElement('div');
+    compassContainer.className = 'custom-compass-container';
+    compassContainer.style.cssText = `
+        position: absolute;
+        bottom: 30px;
+        left: 20px;
+        width: 80px;
+        height: 80px;
+        z-index: 1;
+    `;
+
+    const compassSVG = `
+        <svg width="80" height="80" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- Outer circle with border -->
+            <circle cx="50" cy="50" r="48" fill="white" stroke="#2c3e50" stroke-width="2"/>
+
+            <!-- Cardinal direction markers -->
+            <g id="compass-rose">
+                <!-- North (Red) -->
+                <path d="M 50 10 L 55 25 L 50 20 L 45 25 Z" fill="#e74c3c"/>
+
+                <!-- East -->
+                <path d="M 90 50 L 75 45 L 80 50 L 75 55 Z" fill="#34495e"/>
+
+                <!-- South -->
+                <path d="M 50 90 L 45 75 L 50 80 L 55 75 Z" fill="#34495e"/>
+
+                <!-- West -->
+                <path d="M 10 50 L 25 55 L 20 50 L 25 45 Z" fill="#34495e"/>
+
+                <!-- Direction labels -->
+                <text x="50" y="8" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">N</text>
+                <text x="92" y="54" text-anchor="start" font-size="10" fill="#2c3e50">E</text>
+                <text x="50" y="96" text-anchor="middle" font-size="10" fill="#2c3e50">S</text>
+                <text x="8" y="54" text-anchor="end" font-size="10" fill="#2c3e50">W</text>
+            </g>
+
+            <!-- Center dot -->
+            <circle cx="50" cy="50" r="4" fill="#2c3e50"/>
+        </svg>
+    `;
+
+    compassContainer.innerHTML = compassSVG;
+    compassContainer.style.cursor = 'pointer';
+    compassContainer.title = 'Reset bearing to north';
+
+    // Add click handler to reset bearing
+    compassContainer.addEventListener('click', () => {
+        map.easeTo({ bearing: 0, pitch: 45, duration: 500 });
+    });
+
+    // Update rotation based on map bearing
+    function updateCompassRotation() {
+        const bearing = map.getBearing();
+        const rose = compassContainer.querySelector('#compass-rose');
+        if (rose) {
+            rose.style.transformOrigin = '50% 50%';
+            rose.style.transform = `rotate(${-bearing}deg)`;
+        }
+    }
+
+    // Listen to map rotation
+    map.on('rotate', updateCompassRotation);
+    map.on('load', updateCompassRotation);
+
+    // Add to map container
+    document.getElementById('map').appendChild(compassContainer);
 }
 
 // Fetch weather data from OpenWeatherMap API
@@ -595,7 +673,8 @@ async function loadPlaces() {
                         timings: row.Timings || '',
                         trivia: row.Trivia || '',
                         image: row['Image'] || row['Image URL'] || '',
-                        coordinates: coords
+                        coordinates: coords,
+                        zoomLevel: parseInt(row['Zoom Level']) || 4 // Default to 4 (always visible) if not specified
                     };
 
                     allPlaces.push(place);
@@ -732,14 +811,42 @@ function createMarker(place) {
     return marker;
 }
 
+// Get current zoom threshold based on map zoom level
+function getZoomThreshold(mapZoom) {
+    // Map zoom levels to visibility thresholds
+    // minZoom (12.22) = show level 4 only
+    // zoom 13 = show level 3 and 4
+    // zoom 14 = show level 2, 3, and 4
+    // zoom 15+ = show all (level 1, 2, 3, and 4)
+
+    if (mapZoom < 13) {
+        return 4; // Only show places marked with zoom level 4
+    } else if (mapZoom < 14) {
+        return 3; // Show places with zoom level 3 and 4
+    } else if (mapZoom < 15) {
+        return 2; // Show places with zoom level 2, 3, and 4
+    } else {
+        return 1; // Show all places (zoom level 1, 2, 3, and 4)
+    }
+}
+
 // Display places on map
 function displayPlaces(places) {
     // Clear existing markers
     markers.forEach(marker => marker.remove());
     markers = [];
 
+    // Get current zoom level and threshold
+    const currentZoom = map.getZoom();
+    const zoomThreshold = getZoomThreshold(currentZoom);
+
+    // Filter places based on zoom level
+    const visiblePlaces = places.filter(place => place.zoomLevel >= zoomThreshold);
+
+    console.log(`Zoom: ${currentZoom.toFixed(2)}, Threshold: ${zoomThreshold}, Showing ${visiblePlaces.length}/${places.length} places`);
+
     // Add new markers
-    places.forEach(place => {
+    visiblePlaces.forEach(place => {
         const marker = createMarker(place);
         markers.push(marker);
     });
