@@ -225,7 +225,7 @@ function addCustomCompass() {
 // Fetch weather data from OpenWeatherMap API
 async function fetchWeatherData() {
     try {
-        const apiKey = 'YOUR_OPENWEATHERMAP_API_KEY'; // Users will need to replace this
+        const apiKey = CONFIG.OPENWEATHER_API_KEY;
         const lat = mysoreCenter[1];
         const lon = mysoreCenter[0];
 

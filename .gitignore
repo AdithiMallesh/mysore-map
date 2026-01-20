@@ -18,3 +18,6 @@ npm-debug.log*
 # Optional: Environment variables (if you add any)
 .env
 .env.local
+
+# API Keys and Configuration
+config.js
