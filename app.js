@@ -363,9 +363,10 @@ function updateWeatherAQIDisplay() {
     if (aqiBtn && aqiData) {
         const aqiColor = getAQIColor(aqiData.index);
         const aqiDesc = getAQIDescription(aqiData.index);
-        aqiBtn.textContent = aqiDesc;
+        const pm25 = aqiData.components?.pm2_5 ? Math.round(aqiData.components.pm2_5) : '--';
+        aqiBtn.textContent = pm25;
         aqiBtn.style.color = aqiColor;
-        aqiBtn.title = `Air Quality: ${aqiDesc} (Index: ${aqiData.index})`;
+        aqiBtn.title = `Air Quality: ${aqiDesc} - PM2.5: ${pm25} μg/m³`;
     }
 }
 
