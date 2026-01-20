@@ -225,6 +225,15 @@ function addCustomCompass() {
 // Fetch weather data from OpenWeatherMap API
 async function fetchWeatherData() {
     try {
+        // Check if CONFIG is defined (only available locally with config.js)
+        if (typeof CONFIG === 'undefined' || !CONFIG.OPENWEATHER_API_KEY) {
+            console.warn('Weather API key not configured. Weather/AQI data will not be available.');
+            weatherData = { temp: '--', description: 'Configure API', icon: '01d' };
+            aqiData = { index: '--', components: {} };
+            updateWeatherAQIDisplay();
+            return;
+        }
+
         const apiKey = CONFIG.OPENWEATHER_API_KEY;
         const lat = mysoreCenter[1];
         const lon = mysoreCenter[0];
